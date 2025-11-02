@@ -1,1 +1,1 @@
-# -spring_jdbc_users
+# spring_jdbc_users
