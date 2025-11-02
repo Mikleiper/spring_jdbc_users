@@ -1,7 +1,6 @@
 package com.ra2.users.ra2_users.model;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 
 public class User {
     //atributs
@@ -10,15 +9,15 @@ public class User {
     private String description;
     private String email;
     private String password;
-    private LocalDateTime ultimAcces;
-    private LocalDateTime dataCreated;
-    private LocalDateTime dataUpdated;
+    private Timestamp ultimAcces;
+    private Timestamp dataCreated;
+    private Timestamp dataUpdated;
 
     //constructors
     public User(){
     }
 
-    public User(LocalDateTime dataCreated, LocalDateTime dataUpdated, String description, String email, Long id, String name, String password, LocalDateTime ultimAcces) {
+    public User(Timestamp dataCreated, Timestamp dataUpdated, String description, String email, Long id, String name, String password, Timestamp ultimAcces) {
         this.dataCreated = dataCreated;
         this.dataUpdated = dataUpdated;
         this.description = description;
@@ -29,6 +28,7 @@ public class User {
         this.ultimAcces = ultimAcces;
     }
 
+    // gets i posts    
     public Long getId() {
         return id;
     }
@@ -69,27 +69,33 @@ public class User {
         this.password = password;
     }
 
-    public LocalDateTime getUltimAcces() {
+    public Timestamp getUltimAcces() {
         return ultimAcces;
     }
 
     public void setUltimAcces(Timestamp ultimAcces) {
-        if (ultimAcces != null) this.ultimAcces = ultimAcces.toLocalDateTime();
+        this.ultimAcces = ultimAcces;
     }
 
-    public LocalDateTime getDataCreated() {
+    public Timestamp getDataCreated() {
         return dataCreated;
     }
 
     public void setDataCreated(Timestamp dataCreated) {
-        if (dataCreated != null) this.dataCreated = dataCreated.toLocalDateTime();
+        this.dataCreated = dataCreated;
     }
 
-    public LocalDateTime getDataUpdated() {
+    public Timestamp getDataUpdated() {
         return dataUpdated;
     }
 
     public void setDataUpdated(Timestamp dataUpdated) {
-        if (dataUpdated != null) this.dataUpdated = dataUpdated.toLocalDateTime();
-    }    
+        this.dataUpdated = dataUpdated;
+    }  
+    
+    // ToSting
+    @Override
+    public String toString() {
+        return "User [id=" + id + ", name=" + name + ", description=" + description + ", email=" + email + ", password=" + password + ", ultimAcces=" + ultimAcces + ", dataCreated=" + dataCreated + ", dataUpdated=" + dataUpdated + "]";
+    }
 }
