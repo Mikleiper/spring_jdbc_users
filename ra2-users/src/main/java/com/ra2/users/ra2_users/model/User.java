@@ -1,5 +1,6 @@
 package com.ra2.users.ra2_users.model;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public class User {
@@ -13,7 +14,7 @@ public class User {
     private LocalDateTime dataCreated;
     private LocalDateTime dataUpdated;
 
-    //construcotrs
+    //constructors
     public User(){
     }
 
@@ -72,23 +73,23 @@ public class User {
         return ultimAcces;
     }
 
-    public void setUltimAcces(LocalDateTime ultimAcces) {
-        this.ultimAcces = ultimAcces;
+    public void setUltimAcces(Timestamp ultimAcces) {
+        if (ultimAcces != null) this.ultimAcces = ultimAcces.toLocalDateTime();
     }
 
     public LocalDateTime getDataCreated() {
         return dataCreated;
     }
 
-    public void setDataCreated(LocalDateTime dataCreated) {
-        this.dataCreated = dataCreated;
+    public void setDataCreated(Timestamp dataCreated) {
+        if (dataCreated != null) this.dataCreated = dataCreated.toLocalDateTime();
     }
 
     public LocalDateTime getDataUpdated() {
         return dataUpdated;
     }
 
-    public void setDataUpdated(LocalDateTime dataUpdated) {
-        this.dataUpdated = dataUpdated;
+    public void setDataUpdated(Timestamp dataUpdated) {
+        if (dataUpdated != null) this.dataUpdated = dataUpdated.toLocalDateTime();
     }    
 }

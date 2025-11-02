@@ -2,11 +2,11 @@ version: '3.8'
 services:
   mysql:
     image: mysql:latest
-    container_name: mysql_db
+    container_name: mysql-ra2
     environment:
-      MYSQL_ROOT_PASSWORD: 1234
-      MYSQL_DATABASE: Ra2_Ac02
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ra2-users
       MYSQL_USER: api_user
       MYSQL_PASSWORD: 1234
     ports:
-      - "3306:3306"
+      - "3307:3306"
