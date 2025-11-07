@@ -12,12 +12,13 @@ public class User {
     private Timestamp ultimAcces;
     private Timestamp dataCreated;
     private Timestamp dataUpdated;
+    private String image_path;
 
     //constructors
     public User(){
     }
 
-    public User(Timestamp dataCreated, Timestamp dataUpdated, String description, String email, Long id, String name, String password, Timestamp ultimAcces) {
+    public User(Timestamp dataCreated, Timestamp dataUpdated, String description, String email, Long id, String name, String password, Timestamp ultimAcces, String image_path) {
         this.dataCreated = dataCreated;
         this.dataUpdated = dataUpdated;
         this.description = description;
@@ -91,11 +92,19 @@ public class User {
 
     public void setDataUpdated(Timestamp dataUpdated) {
         this.dataUpdated = dataUpdated;
-    }  
+    }
+
+    public String getImagePath() {
+        return image_path;
+    }
+
+    public void setImagePath(String image_path) {
+        this.image_path = image_path;
+    }
     
     // ToSting
     @Override
     public String toString() {
-        return "User [id=" + id + ", name=" + name + ", description=" + description + ", email=" + email + ", password=" + password + ", ultimAcces=" + ultimAcces + ", dataCreated=" + dataCreated + ", dataUpdated=" + dataUpdated + "]";
+        return "User [id=" + id + ", name=" + name + ", description=" + description + ", email=" + email + ", password=" + password + ", ultimAcces=" + ultimAcces + ", dataCreated=" + dataCreated + ", dataUpdated=" + dataUpdated + ", image_path=" + image_path + "]";
     }
 }

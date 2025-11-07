@@ -7,5 +7,6 @@ CREATE TABLE user (
     password VARCHAR(100) NOT NULL,
     ultimAcces timestamp NULL DEFAULT NULL,
     dataCreated timestamp NULL DEFAULT NULL,
-    dataUpdated timestamp NULL DEFAULT NULL
+    dataUpdated timestamp NULL DEFAULT NULL,
+    image_path VARCHAR(500) NULL
 );

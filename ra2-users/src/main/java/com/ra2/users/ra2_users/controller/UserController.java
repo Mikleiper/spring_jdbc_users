@@ -1,6 +1,7 @@
 package com.ra2.users.ra2_users.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,9 +16,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ra2.users.ra2_users.model.User;
 import com.ra2.users.ra2_users.repository.UserRepository;
+import com.ra2.users.ra2_users.service.UserService;
 
 /**
  * Controlador REST per gestionar operacions CRUD sobre la taula "user".
@@ -27,14 +30,13 @@ import com.ra2.users.ra2_users.repository.UserRepository;
 @RequestMapping("/api")
 public class UserController {
 
-    // Injecció automàtica del UserRepository per accedir a la base de dades
     @Autowired
-    UserRepository userRepository;
+    UserService userService;
 
     // Endpoint per inserir un nou usuari a la base de dades
     @PostMapping("/users")
     public ResponseEntity<String> postUser(@RequestBody User user) {   
-        userRepository.save(user);  //cridem metode save definit al UserRepository
+        userService.save(user);  //cridem metode save definit al UserService
         String msg = String.format("Usuari inserit correctament a la taula User amb aquestes dades: " + "name=%s, description=%s, email=%s",user.getName(), user.getDescription(), user.getEmail()); //creem un string amb format per poder posar al missatge les dades introduides
         return ResponseEntity.status(HttpStatus.CREATED).body(msg);
     }
@@ -42,7 +44,7 @@ public class UserController {
     // Endpoint per obtenir tots els usuaris de la base de dades. Retorna llista d’usuaris o null si no n’hi ha cap
     @GetMapping("/users")
     public ResponseEntity<List<User>> getUsers() {
-        List<User> users = userRepository.findAll();
+        List<User> users = userService.findAll();
         if (users == null || users.isEmpty()) { 
             return ResponseEntity.status(HttpStatus.OK).body(null); // No hi ha cap usuari: retornem null però amb status 200 OK
         }
@@ -85,4 +87,15 @@ public class UserController {
         userRepository.deleteById(user_id); // Si existeix, l’esborrem
         return ResponseEntity.ok().body("Usuari amb id=" + user_id + " eliminat correctament de la base de dades.");
     }
+
+    //Endpoint per pujar imatge
+    @PostMapping("/users/{user_id}/image")
+    public /*ResponseEntity<?>*/String uploadUserImage(
+            @PathVariable Long id,
+            @RequestParam MultipartFile imageFile) {
+                return userService.saveUserImage(id, imageFile);
+    }            
+
+       
+    
 }

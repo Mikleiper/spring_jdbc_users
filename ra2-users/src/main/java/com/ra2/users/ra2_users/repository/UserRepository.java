@@ -1,12 +1,7 @@
 package com.ra2.users.ra2_users.repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.ra2.users.ra2_users.model.User;
@@ -25,6 +20,10 @@ public class UserRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    public int updateImagePath(Long userId, String imagePath) {
+        String sql = "UPDATE users SET image_path = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, imagePath, userId);
+    }
     /**
      * Classe interna per convertir (mapar) cada fila del ResultSet (resultat SQL)
      * en un objecte User de Java.
