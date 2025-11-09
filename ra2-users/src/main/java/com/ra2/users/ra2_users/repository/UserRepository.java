@@ -1,7 +1,12 @@
 package com.ra2.users.ra2_users.repository;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.ra2.users.ra2_users.model.User;
@@ -18,12 +23,7 @@ public class UserRepository {
     * JdbcTemplate és la classe que permet executar consultes SQL de forma simplificada.
     */
     @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    public int updateImagePath(Long userId, String imagePath) {
-        String sql = "UPDATE users SET image_path = ? WHERE id = ?";
-        return jdbcTemplate.update(sql, imagePath, userId);
-    }
+    private JdbcTemplate jdbcTemplate;    
     /**
      * Classe interna per convertir (mapar) cada fila del ResultSet (resultat SQL)
      * en un objecte User de Java.
@@ -42,13 +42,14 @@ public class UserRepository {
             user.setUltimAcces(rs.getTimestamp("ultimacces"));
             user.setDataCreated(rs.getTimestamp("dataCreated"));
             user.setDataUpdated(rs.getTimestamp("dataUpdated"));
+            user.setImagePath(rs.getString("image_path"));
             return user; // Retornem l’objecte User creat
         }
     }
 
     // Adherir nous users. Els valors dataCreated i dataUpdated s’estableixen automàticament amb NOW().
     public int save(User user) {
-        String sql = "INSERT INTO user (name, description, email, password, ultimAcces, dataCreated, dataUpdated) VALUES (?, ?, ?, ?, ?, now(), now())"; // JDBC remplaça cada "?" al SQL per un valor corresponenet en ordre. poso ? en 5 posicions i dos now() fices (q no son placeholders, són funcions de SQL executades per Mysql) Només existeixen 5 placeholders reals!
+        String sql = "INSERT INTO user (name, description, email, password, ultimAcces, dataCreated, dataUpdated, image_path) VALUES (?, ?, ?, ?, ?, now(), now(), ?)"; // JDBC remplaça cada "?" al SQL per un valor corresponenet en ordre. poso ? en 6 posicions i dos now() fices (q no son placeholders, són funcions de SQL executades per Mysql) Només existeixen 6 placeholders reals!
         return jdbcTemplate.update(sql, user.getName(), user.getDescription(), user.getEmail(), user.getPassword(), user.getUltimAcces());  //si el numero de ? i valors no coincideix JDBC llança Error "Parameter index out of range". Només posos 5 placeholder i MYSQL gestionarà adequadament
     }
 
@@ -61,18 +62,23 @@ public class UserRepository {
     // Busca un usuari pel seu ID
     public User findOne(Long id) {
         String sql = "SELECT * FROM user WHERE id = ?";
-        return jdbcTemplate.queryForObject(sql, new UserRowMapper(), id); // queryForObject() espera un únic resultat; si no hi ha cap fila, llença excepció
+        return jdbcTemplate.queryForObject(sql, new UserRowMapper(), id); 
     }
 
     // Actualitza totes les dades d’un usuari existent. Només actualitza els camps: name, description, email, password i dataUpdated.
     public int modifyUser(User user, Long id) {
-        String sql = "UPDATE user SET name = ?, description = ?, email = ?, password = ?, dataUpdated = now() WHERE id = ?";
-        return jdbcTemplate.update(sql, user.getName(), user.getDescription(), user.getEmail(), user.getPassword(), id);
+        String sql = "UPDATE user SET name = ?, description = ?, email = ?, password = ?, dataUpdated = now(), image_path = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, user.getName(), user.getDescription(), user.getEmail(), user.getPassword(), user.getImagePath(), id);
     }
 
     // Elimina un usuari pel seu ID.
     public int deleteById(Long id) {
         String sql = "DELETE FROM user WHERE id = ?";
         return jdbcTemplate.update(sql, id);
+    }
+
+    public int updateImagePath(Long id, String imagePath) {
+        String sql = "UPDATE users SET image_path = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, imagePath, id);
     }
 }
