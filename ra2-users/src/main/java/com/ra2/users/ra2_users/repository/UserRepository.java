@@ -50,7 +50,7 @@ public class UserRepository {
     // Adherir nous users. Els valors dataCreated i dataUpdated s’estableixen automàticament amb NOW().
     public int save(User user) {
         String sql = "INSERT INTO user (name, description, email, password, ultimAcces, dataCreated, dataUpdated, image_path) VALUES (?, ?, ?, ?, ?, now(), now(), ?)"; // JDBC remplaça cada "?" al SQL per un valor corresponenet en ordre. poso ? en 6 posicions i dos now() fices (q no son placeholders, són funcions de SQL executades per Mysql) Només existeixen 6 placeholders reals!
-        return jdbcTemplate.update(sql, user.getName(), user.getDescription(), user.getEmail(), user.getPassword(), user.getUltimAcces());  //si el numero de ? i valors no coincideix JDBC llança Error "Parameter index out of range". Només posos 5 placeholder i MYSQL gestionarà adequadament
+        return jdbcTemplate.update(sql, user.getName(), user.getDescription(), user.getEmail(), user.getPassword(), user.getUltimAcces(), user.getImagePath());  //si el numero de ? i valors no coincideix JDBC llança Error "Parameter index out of range". Només posos 5 placeholder i MYSQL gestionarà adequadament
     }
 
     // Retorna tots els usuaris en format llista d'Users
@@ -62,7 +62,8 @@ public class UserRepository {
     // Busca un usuari pel seu ID
     public User findOne(Long id) {
         String sql = "SELECT * FROM user WHERE id = ?";
-        return jdbcTemplate.queryForObject(sql, new UserRowMapper(), id); 
+        List<User> results = jdbcTemplate.query(sql, new UserRowMapper(), id);
+        return results.isEmpty() ? null : results.get(0); 
     }
 
     // Actualitza totes les dades d’un usuari existent. Només actualitza els camps: name, description, email, password i dataUpdated.
@@ -78,7 +79,7 @@ public class UserRepository {
     }
 
     public int updateImagePath(Long id, String imagePath) {
-        String sql = "UPDATE users SET image_path = ? WHERE id = ?";
+        String sql = "UPDATE user SET image_path = ? WHERE id = ?";
         return jdbcTemplate.update(sql, imagePath, id);
     }
 }

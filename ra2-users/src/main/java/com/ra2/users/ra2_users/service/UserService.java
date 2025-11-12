@@ -1,7 +1,9 @@
 package com.ra2.users.ra2_users.service;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -9,11 +11,13 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ra2.users.ra2_users.model.User;
 import com.ra2.users.ra2_users.repository.UserRepository;
 
+@Service
 public class UserService {
 
     @Autowired
@@ -99,6 +103,9 @@ public class UserService {
         } else {
             return "Error al guardar la imatge:";
         }
-        
-    } 
+    }
+    
+    public 
+
+    try(BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream())))
 }
