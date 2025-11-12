@@ -77,5 +77,14 @@ public class UserController {
     @PostMapping("/users/{user_id}/image")
     public ResponseEntity<String> uploadUserImage(@PathVariable Long user_id, @RequestParam MultipartFile imageFile) throws IOException {
         return ResponseEntity.ok(userService.saveUserImage(user_id, imageFile));
-    }            
+    }
+    
+    //pujar csv
+    @PostMapping("/users/upload-csv")
+    public ResponseEntity<String> postUsersCsv(@RequestBody User user, @RequestParam MultipartFile csvFile) {
+        
+        return ResponseEntity.status(HttpStatus.OK).body("$numeorusuaris + usuaris creats satisfactoriament");
+    }
+    
+
 }

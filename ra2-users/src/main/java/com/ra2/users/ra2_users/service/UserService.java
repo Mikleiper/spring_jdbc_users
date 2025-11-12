@@ -105,7 +105,9 @@ public class UserService {
         }
     }
     
-    public 
+    public int saveUsers(User user, MultipartFile imageFile) throws IOException{
 
-    try(BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream())))
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream())))
+    
+    }
 }
