@@ -8,12 +8,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ra2.users.ra2_users.model.User;
 import com.ra2.users.ra2_users.repository.UserRepository;
 
@@ -23,9 +26,13 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    // Per llegir Json
+    @Autowired
+    ObjectMapper mapper;
+
     // inserir un nou usuari a la base de dades
-    public void save(User user) {
-        userRepository.save(user);
+    public int save(User user) {
+        return userRepository.save(user);
     }
 
     // Obtenir tots
@@ -40,51 +47,26 @@ public class UserService {
     }
 
     //Modifca 1 usuari sencer
-    public User updateUser(Long id, User user) {
-        User existeix = getUser(id);
-        if (existeix == null) {
-            return null;
-        }
-        // Actualitzem els camps amb les noves dades
-        existeix.setName(user.getName());
-        existeix.setDescription(user.getDescription());
-        existeix.setEmail(user.getEmail());
-        existeix.setPassword(user.getPassword());
-        existeix.setImagePath(user.getImagePath());
-
-        userRepository.modifyUser(existeix, id);
-        return getUser(id); // Retornem l’usuari actualitzat
+    public int updateUser(Long id, User user) {
+        return userRepository.updateUser(user, id);
     }
 
     //Modifca només nom
-    public User updateUserName(Long id, String newName){
-        User existeix = getUser(id);
-        if (existeix == null) {
-            return null;
-        }
-        // Actualitzem el nom amb les noves dades
-        existeix.setName(newName);
-
-        userRepository.modifyUser(existeix, id);
-        return getUser(id);
+    public int updateUser(long id, String name){
+        return userRepository.updateUser(id, name);
     }
 
     //Esborrem usuari per id
-    public boolean deleteUser(Long id) {
-        User existeix = getUser(id);
-        if (existeix == null) {
-            return false;
-        }
-        userRepository.deleteById(id);
-        return true;
+    public int deleteUser(Long id) {
+        return userRepository.deleteById(id);
     }
 
     public String saveUserImage(Long id, MultipartFile imageFile) throws IOException{
         User user = userRepository.findOne(id);
         
         if(user != null){
-            Path novaCarpeta = Paths.get("src/main/resources/public/images");  //CREEM NOVA CARPETA //.get és = a new File en NIO2
-            if (Files.notExists(novaCarpeta)) {   //si existeix
+            Path novaCarpeta = Paths.get("uploads/images");  //CREEM NOVA CARPETA //.get és = a new File en NIO2
+            if (Files.notExists(novaCarpeta)) {   //si no existeix la carpeta
                 Files.createDirectories(novaCarpeta);  //executem i creem carpeta
             }
             String fileName = imageFile.getOriginalFilename();  //Retorna el nom original del fitxer tal com el tenia l’usuari en el seu sistema
@@ -105,9 +87,84 @@ public class UserService {
         }
     }
     
-    public int saveUsers(User user, MultipartFile imageFile) throws IOException{
+    public int saveUsers(MultipartFile csvFile){
+        int conta = 0;
+        //controlem internament error d'accès-lectura del csv
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(csvFile.getInputStream()))){
+            String linia;
+            int nLinia = 0;
+            while ((linia = br.readLine()) != null){
+                nLinia++;
+                if (nLinia == 1) continue; //saltem 1ªlinea del csv on no hi ha usuaris i només hi han headers
+                if (linia.trim().isEmpty()) continue; //salta linies buides
+                String[] user = linia.split(",");
+                Timestamp now = new Timestamp(System.currentTimeMillis());                
+                User usuari = new User(user[0],user[1],user[2],user[3],now, now, now);
+                userRepository.save(usuari);     
+                conta++;                           
+            }
+        } catch (IOException e){
+            return -1;
+        }
+        //creem carpeta si no existeix i guardem el csv i controlem internamente rror per guardar csv a resources  
+        try{
+            Path directoryPath = Paths.get("uploads/csv_processed");
+            Files.createDirectories(directoryPath);
 
-        try(BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream())))
-    
+            Path filePath = directoryPath.resolve(csvFile.getOriginalFilename());
+            Files.write(filePath, csvFile.getBytes());
+        } catch (IOException e){
+            return -2;
+        }
+        // Retornem registres creats
+        return conta;        
+    }
+
+    public int saveUsersJson(MultipartFile jsonFile){
+        int conta = 0;
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
+        try{
+            JsonNode arrel = mapper.readTree(jsonFile.getInputStream()); //llegim fitxerJson
+            JsonNode data = arrel.path("data");  //accedim al node data, això depen de l'estrucutra del json
+            int count = data.path("count").asInt();  // llegim el nombre de count per comparar amb nombre d'usuaris q contè el Json
+            String control = data.path("control").asText(); //Idem amb control
+            if (!control.equals("OK")){ //comprovem OK al control
+                return -1;
+            }
+            JsonNode users = data.path("users");
+            if (users.size() != count) {
+                return -3;
+            }
+            //dins de users llegim els paramatres de cada ususari
+            for (JsonNode user: users){
+                String name = user.path("name").asText();
+                String descripcio = user.path("description").asText();
+                String email = user.path("email").asText();
+                String contrasenya = user.path("password").asText();
+
+                User usuari = new User(name, descripcio,email,contrasenya,now,now,now);
+                // Afegim usuari a la base de dades
+                try { 
+                    userRepository.save(usuari);
+                    conta++;
+                } catch (Exception e){
+                    return -2;
+                }
+            }
+            
+        } catch (IOException e) {
+            return -4;
+        } 
+
+        try{ //Guardem l'arxiu JSON a la carpeta json_processed i controlem internamente error
+            Path directoryPath = Paths.get("uploads/json_processed"); // Crear la carpeta si no existe
+            Files.createDirectories(directoryPath);
+            Path filePath = directoryPath.resolve(jsonFile.getOriginalFilename());            
+            Files.write(filePath, jsonFile.getBytes());        
+        }catch (IOException e){
+            return -5;
+        }
+        return conta;
     }
 }

@@ -2,6 +2,7 @@ package com.ra2.users.ra2_users.repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class UserRepository {
      * Classe interna per convertir (mapar) cada fila del ResultSet (resultat SQL)
      * en un objecte User de Java.
     */
-    private static class UserRowMapper implements RowMapper<User> {
+    private static final class UserRowMapper implements RowMapper<User> {
         @Override
         public User mapRow(ResultSet rs, int rowNum) throws SQLException{
              // Creem un nou objecte User per a cada fila retornada pel SELECT
@@ -47,10 +48,9 @@ public class UserRepository {
         }
     }
 
-    // Adherir nous users. Els valors dataCreated i dataUpdated s’estableixen automàticament amb NOW().
-    public int save(User user) {
-        String sql = "INSERT INTO user (name, description, email, password, ultimAcces, dataCreated, dataUpdated, image_path) VALUES (?, ?, ?, ?, ?, now(), now(), ?)"; // JDBC remplaça cada "?" al SQL per un valor corresponenet en ordre. poso ? en 6 posicions i dos now() fices (q no son placeholders, són funcions de SQL executades per Mysql) Només existeixen 6 placeholders reals!
-        return jdbcTemplate.update(sql, user.getName(), user.getDescription(), user.getEmail(), user.getPassword(), user.getUltimAcces(), user.getImagePath());  //si el numero de ? i valors no coincideix JDBC llança Error "Parameter index out of range". Només posos 5 placeholder i MYSQL gestionarà adequadament
+    // Adherir nous users. 
+    public int save(User user) {        
+        return jdbcTemplate.update("INSERT INTO user (name, description, email, password, ultimAcces, dataCreated, dataUpdated) VALUES (?,?,?,?,?,?,?)",user.getName(), user.getDescription(), user.getEmail(), user.getPassword(), user.getUltimAcces(), new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()));
     }
 
     // Retorna tots els usuaris en format llista d'Users
@@ -63,13 +63,19 @@ public class UserRepository {
     public User findOne(Long id) {
         String sql = "SELECT * FROM user WHERE id = ?";
         List<User> results = jdbcTemplate.query(sql, new UserRowMapper(), id);
-        return results.isEmpty() ? null : results.get(0); 
+        return results.isEmpty()? null : results.get(0); 
     }
 
-    // Actualitza totes les dades d’un usuari existent. Només actualitza els camps: name, description, email, password i dataUpdated.
-    public int modifyUser(User user, Long id) {
-        String sql = "UPDATE user SET name = ?, description = ?, email = ?, password = ?, dataUpdated = now(), image_path = ? WHERE id = ?";
-        return jdbcTemplate.update(sql, user.getName(), user.getDescription(), user.getEmail(), user.getPassword(), user.getImagePath(), id);
+    // Actualitza totes les dades d’un usuari.
+    public int updateUser(User user, Long id) {
+        String sql = "UPDATE user SET name = ?, description = ?, email = ?, password = ?, dataUpdated = ?, WHERE id = ?";
+        return jdbcTemplate.update(sql, user.getName(), user.getDescription(), user.getEmail(), user.getPassword(), new Timestamp(System.currentTimeMillis()), id);
+    }
+
+    // Actualitza el nom d’un usuari.
+    public int updateUser(long id, String name){
+        String sql = "UPDATE user set name = ?, data_actualitzat = ? where id = ?";
+        return jdbcTemplate.update(sql, name, new Timestamp(System.currentTimeMillis()), id);
     }
 
     // Elimina un usuari pel seu ID.
@@ -78,6 +84,7 @@ public class UserRepository {
         return jdbcTemplate.update(sql, id);
     }
 
+    // Afegir una imatge de l’usuari
     public int updateImagePath(Long id, String imagePath) {
         String sql = "UPDATE user SET image_path = ? WHERE id = ?";
         return jdbcTemplate.update(sql, imagePath, id);

@@ -30,7 +30,7 @@ import com.ra2.users.ra2_users.service.UserService;
 public class UserController {
 
     @Autowired
-    UserService userService;
+    private UserService userService;
 
     // Endpoint per inserir un nou usuari a la base de dades
     @PostMapping("/users")
@@ -55,22 +55,23 @@ public class UserController {
 
     // Endpoint per actualitzar totes les dades d’un usuari
     @PutMapping("users/{user_id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long user_id, @RequestBody User user) { //<?> pq pot retornar dos tipus: o String si no existeix  o User si existeix i es modifica satisfactoriament l'User
-        User actulitzat = userService.updateUser(user_id, user);
-        return (actulitzat == null) ?  null : ResponseEntity.status(HttpStatus.OK).body("L'usuari amb id " + user_id + "actulizat satisfactoriament");
+    public ResponseEntity<String> updateUser(@PathVariable Long user_id, @RequestBody User user) { 
+        int actulitzat = userService.updateUser(user_id, user);
+        return (actulitzat == 0) ?  ResponseEntity.status(HttpStatus.OK).body("No s'ha efectuat cap canvi") : ResponseEntity.status(HttpStatus.OK).body(String.format("L'usuari amb nom %s s'ha actulizat satisfactoriament", user.getName()));
     }
 
     // Endpoint per modificar només el nom d’un usuari
     @PatchMapping("/users/{user_id}/name")
-    public ResponseEntity<?> updateName(@PathVariable Long user_id, @RequestParam String name) {  //<?> pq pot retornar dos tipus: o String si no existeix  o User si existeix i modifica el nom
-        User actulitzat = userService.updateUserName(user_id, name);
-        return (actulitzat == null) ?  null : ResponseEntity.ok().body("El nom de l'usuari amb id " + user_id + "actulizat satisfactoriament");
+    public ResponseEntity<String> updateName(@PathVariable Long user_id, @RequestParam String name) { 
+        int actulitzat = userService.updateUser(user_id, name);
+        return (actulitzat == 0) ?  ResponseEntity.status(HttpStatus.OK).body("No s'ha efectuat cap canvi") : ResponseEntity.status(HttpStatus.OK).body(String.format("S'ha actulitzat el nom de l'usuari amb id %d satisfactoriament", user_id));
     }
 
     // Endpoint per eliminar un usuari pel seu ID.
     @DeleteMapping("/users/{user_id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long user_id) {
-        return (userService.deleteUser(user_id))? ResponseEntity.ok().body("Usuari amb id=" + user_id + " eliminat correctament de la base de dades.") : ResponseEntity.status(HttpStatus.NOT_FOUND).body("L'usuari cercat per esborrar no existeix");
+        int esborrat = userService.deleteUser(user_id);
+        return (esborrat > 0)? ResponseEntity.status(HttpStatus.OK).body("Usuari amb id=" + user_id + " eliminat correctament de la base de dades.") : ResponseEntity.status(HttpStatus.OK).body("No s'ha esborrat res, l'usuari cercat no existeix");
     }
 
     //Endpoint per pujar imatge
@@ -81,10 +82,41 @@ public class UserController {
     
     //pujar csv
     @PostMapping("/users/upload-csv")
-    public ResponseEntity<String> postUsersCsv(@RequestBody User user, @RequestParam MultipartFile csvFile) {
-        
-        return ResponseEntity.status(HttpStatus.OK).body("$numeorusuaris + usuaris creats satisfactoriament");
+    public ResponseEntity<String> postUsersCsv(@RequestParam MultipartFile csvFile) {
+        int nRegsitres = userService.saveUsers(csvFile);
+        // segons el numero q ens retorna saveUsers ho traduim i retornem amb ResponseEntity
+        if (nRegsitres == -1){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No s'ha afegit cap usuari perquè no s'ha pogut llegir l'arxiu.");
+        }
+        if (nRegsitres == -2){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("S'han afegit els usuaris, però no s'ha guardat el fitxer csv processat.");
+        }
+        if (nRegsitres == 0){
+            return ResponseEntity.status(HttpStatus.OK).body("No s'ha afegit cap usuari perquè el fitxer csv no contenia cap");
+        }        
+        return ResponseEntity.status(HttpStatus.OK).body(String.format("%d usuaris creats satisfactoriament",nRegsitres));
     }
-    
 
+    @PostMapping("/users/upload-json")
+    public ResponseEntity<String> postUsersJson(@RequestParam MultipartFile jsonFile) {
+        int registre = userService.saveUsersJson(jsonFile);
+        // segons el numero q ens retorna saveUsersJson ho traduim i retornem amb ResponseEntity
+        if (registre == -1) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Contingut del Json incorrecte. No hi ha control OK");
+        }
+        if (registre == -2) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No s'ha pogut guardar l'arxiu Json.");
+        }
+        if (registre == -3) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Contingut del Json incorrecte. No coincideix nombre d'usuaris continguts i valor de count");
+        }
+        if (registre == -4) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al llegir l'arxiu Json");
+        }
+        if (registre == -5) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No es pot desar l'arxiu Json");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(String.format("%d usuaris creats satisfactoriament", registre));
+    }    
+    
 }

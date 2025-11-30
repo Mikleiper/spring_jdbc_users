@@ -29,6 +29,18 @@ public class User {
         this.ultimAcces = ultimAcces;
     }
 
+    // Constructor sense id
+    public User( String name, String description, String email, String password, Timestamp ultimAcces,
+            Timestamp dataCreated, Timestamp dataUpdated) {
+        this.name = name;
+        this.description = description;
+        this.email = email;
+        this.password = password;
+        this.ultimAcces = ultimAcces;
+        this.dataCreated = dataCreated;
+        this.dataUpdated = dataUpdated;
+    }
+
     // gets i posts    
     public Long getId() {
         return id;

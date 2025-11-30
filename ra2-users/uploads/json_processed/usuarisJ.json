@@ -1,0 +1,26 @@
+{
+  "data": {
+    "count": 3,
+    "control": "NO",
+    "users": [
+      {
+        "name": "Linda",
+        "description": "Tenebrosa",
+        "email": "lindt@example.com",
+        "password": "lind123"
+      },
+      {
+        "name": "Carles",
+        "description": "Rodriguez",
+        "email": "carrodri@example.com",
+        "password": "1234"
+      },
+      {
+        "name": "Charles",
+        "description": "Stockton",
+        "email": "chstoe@example.com",
+        "password": "utahMalone"
+      }
+    ]
+  }
+}
