@@ -36,11 +36,16 @@ public class UserController {
     @Autowired
     private CustomLogging customLogging;
 
+    private static final String CLASS_NAME = "UserService";
+
     // Endpoint per inserir un nou usuari a la base de dades
     @PostMapping("/users")
-    public ResponseEntity<String> postUser(@RequestBody User user) {   
-        userService.save(user);  //cridem metode save definit al UserService
-        return ResponseEntity.status(HttpStatus.CREATED).body("Usuari creat correctament: " + user.getName());
+    public ResponseEntity<String> postUser(@RequestBody User user) {  
+        int result = userService.save(user);
+        if (result == 0){
+            return ResponseEntity.status(HttpStatus.OK).body("Usuari no s'ha creat correctament");
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(result + " usuari afegit correctament: " + user.getName());        
     }
 
     // Endpoint per obtenir tots els usuaris de la base de dades. Retorna llista d’usuaris o null si no n’hi ha cap
@@ -54,7 +59,11 @@ public class UserController {
     @GetMapping("users/{user_id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user =  userService.getUser(id); // Cerquem l’usuari pel seu ID
-        return ResponseEntity.status(HttpStatus.OK).body(user);  // Retorna l'usuari trobat amb status 200 OK
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } else {
+            return ResponseEntity.status(HttpStatus.OK).body(user);
+        } 
     }
 
     // Endpoint per actualitzar totes les dades d’un usuari

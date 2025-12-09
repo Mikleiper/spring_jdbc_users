@@ -29,42 +29,78 @@ public class UserService {
 
     @Autowired
     ObjectMapper mapper;
-    
+
     @Autowired
     private CustomLogging customLogging;
 
+    private static final String CLASS_NAME = "UserService";
+
     // inserir un nou usuari a la base de dades
     public int save(User user) {
-        return userRepository.save(user);
+        customLogging.info(CLASS_NAME, "createUser", "Creant un usuari");
+        try {
+            userRepository.save(user);
+        } catch (Exception er) {
+            customLogging.error(CLASS_NAME, "createUser", "L'user amb nom: " + user.getName() + " no s'ha creat correctament.");
+            return 0;
+        }
+        customLogging.info(CLASS_NAME, "createUser", "User creat correctament");
+        return 1;
     }
 
     // Obtenir tots
     public List<User> findAll() {
+        customLogging.info(CLASS_NAME, "findAll", "Consultant tots els users");
         List<User> users = userRepository.findAll();
         return (users == null || users.isEmpty()) ? null : users;
     }
 
     // Obtenir 1 usuari pel seu id
-    public User getUser(Long id){
-        return userRepository.findOne(id);
+    public User getUser(Long id) throws IOException{
+        customLogging.info(CLASS_NAME, "getUserbyId", "Consultant l'user amb id: " + id);
+        User user = userRepository.findOne(id);
+        if (user == null) customLogging.error(CLASS_NAME, "getUserbyId", "L'user amb id: " + id + " no existeix");
+        return user;
     }
 
     //Modifca 1 usuari sencer
     public int updateUser(Long id, User user) {
-        return userRepository.updateUser(user, id);
+        customLogging.info(CLASS_NAME, "updateAllUser", "Modificant l'user amb id: " + user.getId());
+        int result = userRepository.updateUser(user, id);
+        if (result == 0) {
+            customLogging.error(CLASS_NAME, "updateAllUser", "L'user amb id: " + user.getId() + " no existeix.");
+        } else {
+            customLogging.info(CLASS_NAME, "updateAllUser", "User modificat correctament.");
+        }
+        return result;
     }
 
     //Modifca només nom
     public int updateUser(long id, String name){
-        return userRepository.updateUser(id, name);
+        customLogging.info(className, "updateUser", "Modificant l'user amb id: " + id);
+        int result = userRepository.updateUser(id, name);
+        if (result == 0) {
+            customLogging.error(CLASS_NAME, "updateAllUser", "L'user amb id: " + user.getId() + " no existeix.");
+        } else {
+            customLogging.info(CLASS_NAME, "updateAllUser", "User modificat correctament.");
+        }
+        return result;
     }
 
     //Esborrem usuari per id
     public int deleteUser(Long id) {
-        return userRepository.deleteById(id);
+        customLogging.info(CLASS_NAME, "deleteUser", "Borrant l'user amb id: " + id);
+        int resultat = userRepository.deleteById(id);
+        if (resultat == 0) {
+            customLogging.error(CLASS_NAME, "deleteUser", "L'user amb id: " + id + " no existeix.");
+        } else {
+            customLogging.info(CLASS_NAME, "deleteUser", "L'user amb id: " + id + " s'ha borrat correctament.");
+        }
+        return resultat;
     }
 
     public String saveUserImage(Long id, MultipartFile imageFile) throws IOException{
+        customLogging.info(CLASS_NAME, "uploadImage", "Afegint la imatge" + imageFile + "de l'user amb id: " + id);
         User user = userRepository.findOne(id);
         
         if(user != null){
@@ -84,6 +120,7 @@ public class UserService {
             String relativePath = "/images/" + fileName;  // NO guardem la ruta absoluta del sistema d'arxius-això és quan guardem físicament l'arxiu en un discdur, SÍ guardem la ruta relativa per la BBDD
             userRepository.updateImagePath(id, relativePath);
 
+            customLogging.info(CLASS_NAME, "uploadImage", "Actualitzant la imatge de l'user amb id: " + id);    
             return "Imatge pujada correctament. Ruta: " + relativePath;
         } else {
             return "Error al guardar la imatge:";

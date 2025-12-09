@@ -44,7 +44,7 @@ public class CustomLogging {
     }
 
     // mètode per gestionars missatges d'error al log
-    public void LogError(String className, String method, String errorMsg,Exception exception){
+    public void error(String className, String method, String errorMsg){
         String timestamp = LocalDateTime.now().format(formatter);
         String logEntry = String.format("[ERROR] %s - Class: %s - Method: %s - Description: %s ", timestamp,className,method,errorMsg);        
         if(exception != null){
@@ -55,7 +55,7 @@ public class CustomLogging {
     }  
 
     // mètode per gestionars missatges d'informació al log
-    public void LogInfo(String classeName, String method, String infoMsg){
+    public void info(String classeName, String method, String infoMsg){
         String timestamp = LocalDateTime.now().format(formatter);
         String logEntry = String.format("[INFO] %s - Class: %s - Method : %s Description: %s",timestamp,classeName,method,infoMsg);
         writeToFile(logEntry);
