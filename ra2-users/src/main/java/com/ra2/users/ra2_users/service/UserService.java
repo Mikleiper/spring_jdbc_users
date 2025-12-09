@@ -119,31 +119,38 @@ public class UserService {
             
             String relativePath = "/images/" + fileName;  // NO guardem la ruta absoluta del sistema d'arxius-això és quan guardem físicament l'arxiu en un discdur, SÍ guardem la ruta relativa per la BBDD
             userRepository.updateImagePath(id, relativePath);
-
-            customLogging.info(CLASS_NAME, "uploadImage", "Actualitzant la imatge de l'user amb id: " + id);    
+            customLogging.info(CLASS_NAME, "uploadImage", "La imatge s'ha guardat correctament. El path és : " + relativePath);    
             return "Imatge pujada correctament. Ruta: " + relativePath;
         } else {
+            customLogging.error(CLASS_NAME, "uploadImage", "l'User amd id " + id +"no existeix");
             return "Error al guardar la imatge:";
         }
     }
     
     public int saveUsers(MultipartFile csvFile){
         int conta = 0;
+        int contaErrors = 0;
+        customLogging.info(CLASS_NAME, "insertAllByCsv", "Carregant la informació del fitxer " + csvFile.getOriginalFilename());
+        int nLinia = 0;
         //controlem internament error d'accès-lectura del csv
         try(BufferedReader br = new BufferedReader(new InputStreamReader(csvFile.getInputStream()))){
             String linia;
-            int nLinia = 0;
             while ((linia = br.readLine()) != null){
                 nLinia++;
                 if (nLinia == 1) continue; //saltem 1ªlinea del csv on no hi ha usuaris i només hi han headers
                 if (linia.trim().isEmpty()) continue; //salta linies buides
                 String[] user = linia.split(",");
-                Timestamp now = new Timestamp(System.currentTimeMillis());                
-                User usuari = new User(user[0],user[1],user[2],user[3],now, now, now);
-                userRepository.save(usuari);     
-                conta++;                           
+                Timestamp now = new Timestamp(System.currentTimeMillis());   
+                try {
+                    User usuari = new User(user[0],user[1],user[2],user[3],now, now, now);
+                    userRepository.save(usuari);     
+                    conta++;
+                } catch (Exception e) {
+                    contaErrors++;
+                }         
             }
         } catch (IOException e){
+            customLogging.error(CLASS_NAME, "insertAllByCsv", "Error en la línia " + nLinia + " del fitxer. Missatge d'error: " + e.getMessage());
             return -1;
         }
         //creem carpeta si no existeix i guardem el csv i controlem internamente rror per guardar csv a resources  
@@ -156,18 +163,21 @@ public class UserService {
         } catch (IOException e){
             return -2;
         }
+        customLogging.info(CLASS_NAME, "insertAllByCsv", "S'han guardat correctament " + conta + " registres i han donat error " + contaErrors + " registres");
         // Retornem registres creats
         return conta;        
     }
 
     public int saveUsersJson(MultipartFile jsonFile){
         int conta = 0;
+        customLogging.info(CLASS_NAME, "insertAllByJson", "Carregant la informació del fitxer " + jsonFile.getOriginalFilename());
         Timestamp now = new Timestamp(System.currentTimeMillis());
+        int count;
 
         try{
             JsonNode arrel = mapper.readTree(jsonFile.getInputStream()); //llegim fitxerJson
             JsonNode data = arrel.path("data");  //accedim al node data, això depen de l'estrucutra del json
-            int count = data.path("count").asInt();  // llegim el nombre de count per comparar amb nombre d'usuaris q contè el Json
+            count = data.path("count").asInt();  // llegim el nombre de count per comparar amb nombre d'usuaris q contè el Json
             String control = data.path("control").asText(); //Idem amb control
             if (!control.equals("OK")){ //comprovem OK al control
                 return -1;
@@ -189,6 +199,7 @@ public class UserService {
                     userRepository.save(usuari);
                     conta++;
                 } catch (Exception e){
+                    customLogging.error(CLASS_NAME, "insertAllByJson", "Error en la línia " + conta + " del fitxer. Missatge d'error: " + e.getMessage());
                     return -2;
                 }
             }
@@ -205,6 +216,7 @@ public class UserService {
         }catch (IOException e){
             return -5;
         }
+        customLogging.info(CLASS_NAME, "insertAllByCsv", "S'han guardat correctament " + conta + " registres i han donat error " + (count-conta) + " registres");
         return conta;
     }    
 }
