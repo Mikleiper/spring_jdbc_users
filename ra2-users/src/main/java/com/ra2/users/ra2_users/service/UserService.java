@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ra2.users.ra2_users.logging.CustomLogging;
 import com.ra2.users.ra2_users.model.User;
 import com.ra2.users.ra2_users.repository.UserRepository;
 
@@ -26,9 +27,11 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    // Per llegir Json
     @Autowired
     ObjectMapper mapper;
+    
+    @Autowired
+    private CustomLogging customLogging;
 
     // inserir un nou usuari a la base de dades
     public int save(User user) {
@@ -166,5 +169,5 @@ public class UserService {
             return -5;
         }
         return conta;
-    }
+    }    
 }

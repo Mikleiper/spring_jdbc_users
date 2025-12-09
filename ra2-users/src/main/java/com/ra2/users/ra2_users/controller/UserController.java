@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ra2.users.ra2_users.logging.CustomLogging;
 import com.ra2.users.ra2_users.model.User;
 import com.ra2.users.ra2_users.service.UserService;
 
@@ -31,6 +32,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private CustomLogging customLogging;
 
     // Endpoint per inserir un nou usuari a la base de dades
     @PostMapping("/users")
@@ -117,6 +121,5 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No es pot desar l'arxiu Json");
         }
         return ResponseEntity.status(HttpStatus.OK).body(String.format("%d usuaris creats satisfactoriament", registre));
-    }    
-    
+    } 
 }
