@@ -68,13 +68,13 @@ public class UserRepository {
 
     // Actualitza totes les dades d’un usuari.
     public int updateUser(User user, Long id) {
-        String sql = "UPDATE user SET name = ?, description = ?, email = ?, password = ?, dataUpdated = ?, WHERE id = ?";
+        String sql = "UPDATE `user` SET name = ?, description = ?, email = ?, password = ?, dataUpdated = ? WHERE id = ?";
         return jdbcTemplate.update(sql, user.getName(), user.getDescription(), user.getEmail(), user.getPassword(), new Timestamp(System.currentTimeMillis()), id);
     }
 
     // Actualitza el nom d’un usuari.
     public int updateUser(long id, String name){
-        String sql = "UPDATE user set name = ?, data_actualitzat = ? where id = ?";
+        String sql = "UPDATE `user` set name = ?, dataUpdated = ? where id = ?";
         return jdbcTemplate.update(sql, name, new Timestamp(System.currentTimeMillis()), id);
     }
 

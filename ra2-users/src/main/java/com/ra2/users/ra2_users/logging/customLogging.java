@@ -27,7 +27,7 @@ public class CustomLogging {
 
     //mètode intern per gestionar la cració del directori, nom dle fitxer i contingut dle log
     private void writeToFile(String msg){
-        String LOG_FILE = LOGS_PATH + String.format("aplicacio-%s-%s-%s.log", LocalDateTime.now().getYear(), LocalDateTime.now().getMonthValue(), LocalDateTime.now().getDayOfMonth());
+        String LOG_FILE = LOG_DIRECTORY + String.format("aplicacio-%s-%s-%s.log", LocalDateTime.now().getYear(), LocalDateTime.now().getMonthValue(), LocalDateTime.now().getDayOfMonth());
         Path logPath = Paths.get(LOG_DIRECTORY + LOG_FILE);
         try{ 
             if (logPath.getParent() != null && !Files.exists(logPath.getParent())) {
@@ -44,20 +44,20 @@ public class CustomLogging {
     }
 
     // mètode per gestionars missatges d'error al log
-    public void error(String className, String method, String errorMsg){
+    public void error(String className, String method, String errorMsg, Exception e){
         String timestamp = LocalDateTime.now().format(formatter);
-        String logEntry = String.format("[ERROR] %s - Class: %s - Method: %s - Description: %s ", timestamp,className,method,errorMsg);        
-        if(exception != null){
-            logEntry += " - Exception: " + exception.getMessage();
+        String logEntry = String.format("[%s] ERROR - %s - %s - %s", timestamp, className, method, errorMsg);        
+        if(e != null){
+            logEntry += " - Exception: " + e.getMessage();
         }
         writeToFile(logEntry);
         System.out.println(logEntry);
     }  
 
     // mètode per gestionars missatges d'informació al log
-    public void info(String classeName, String method, String infoMsg){
+    public void info(String className, String method, String infoMsg){
         String timestamp = LocalDateTime.now().format(formatter);
-        String logEntry = String.format("[INFO] %s - Class: %s - Method : %s Description: %s",timestamp,classeName,method,infoMsg);
+        String logEntry = String.format("[%s] INFO - %s - %s - %s", timestamp, className, method, infoMsg);
         writeToFile(logEntry);
         System.out.println(logEntry);
     }

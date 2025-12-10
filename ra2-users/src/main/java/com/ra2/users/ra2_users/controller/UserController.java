@@ -36,8 +36,6 @@ public class UserController {
     @Autowired
     private CustomLogging customLogging;
 
-    private static final String CLASS_NAME = "UserService";
-
     // Endpoint per inserir un nou usuari a la base de dades
     @PostMapping("/users")
     public ResponseEntity<String> postUser(@RequestBody User user) {  
@@ -56,8 +54,8 @@ public class UserController {
     }
 
     // Endpoint per obtenir un usuari concret pel seu ID
-    @GetMapping("users/{user_id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    @GetMapping("/users/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable Long id) throws IOException {
         User user =  userService.getUser(id); // Cerquem l’usuari pel seu ID
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -67,17 +65,17 @@ public class UserController {
     }
 
     // Endpoint per actualitzar totes les dades d’un usuari
-    @PutMapping("users/{user_id}")
-    public ResponseEntity<String> updateUser(@PathVariable Long user_id, @RequestBody User user) { 
-        int actulitzat = userService.updateUser(user_id, user);
+    @PutMapping("/users/{id}")
+    public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody User user) { 
+        int actulitzat = userService.updateUser(id, user);
         return (actulitzat == 0) ?  ResponseEntity.status(HttpStatus.OK).body("No s'ha efectuat cap canvi") : ResponseEntity.status(HttpStatus.OK).body(String.format("L'usuari amb nom %s s'ha actulizat satisfactoriament", user.getName()));
     }
 
     // Endpoint per modificar només el nom d’un usuari
-    @PatchMapping("/users/{user_id}/name")
-    public ResponseEntity<String> updateName(@PathVariable Long user_id, @RequestParam String name) { 
-        int actulitzat = userService.updateUser(user_id, name);
-        return (actulitzat == 0) ?  ResponseEntity.status(HttpStatus.OK).body("No s'ha efectuat cap canvi") : ResponseEntity.status(HttpStatus.OK).body(String.format("S'ha actulitzat el nom de l'usuari amb id %d satisfactoriament", user_id));
+    @PatchMapping("/users/{id}/name")
+    public ResponseEntity<String> updateName(@PathVariable Long id, @RequestParam String name) { 
+        int actulitzat = userService.updateUser(id, name);
+        return (actulitzat == 0) ?  ResponseEntity.status(HttpStatus.OK).body("No s'ha efectuat cap canvi") : ResponseEntity.status(HttpStatus.OK).body(String.format("S'ha actulitzat el nom de l'usuari amb id %d satisfactoriament", id));
     }
 
     // Endpoint per eliminar un usuari pel seu ID.

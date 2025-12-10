@@ -41,7 +41,7 @@ public class UserService {
         try {
             userRepository.save(user);
         } catch (Exception er) {
-            customLogging.error(CLASS_NAME, "createUser", "L'user amb nom: " + user.getName() + " no s'ha creat correctament.");
+            customLogging.error(CLASS_NAME, "createUser", "L'user amb nom: " + user.getName() + " no s'ha creat correctament. Missatge d'error: ", er);
             return 0;
         }
         customLogging.info(CLASS_NAME, "createUser", "User creat correctament");
@@ -50,7 +50,7 @@ public class UserService {
 
     // Obtenir tots
     public List<User> findAll() {
-        customLogging.info(CLASS_NAME, "findAll", "Consultant tots els users");
+        customLogging.info(CLASS_NAME, "getAllUsers", "Consultant tots els users");
         List<User> users = userRepository.findAll();
         return (users == null || users.isEmpty()) ? null : users;
     }
@@ -59,7 +59,7 @@ public class UserService {
     public User getUser(Long id) throws IOException{
         customLogging.info(CLASS_NAME, "getUserbyId", "Consultant l'user amb id: " + id);
         User user = userRepository.findOne(id);
-        if (user == null) customLogging.error(CLASS_NAME, "getUserbyId", "L'user amb id: " + id + " no existeix");
+        if (user == null) customLogging.error(CLASS_NAME, "getUserbyId", "L'user amb id: " + id + " no existeix", null);
         return user;
     }
 
@@ -68,7 +68,7 @@ public class UserService {
         customLogging.info(CLASS_NAME, "updateAllUser", "Modificant l'user amb id: " + user.getId());
         int result = userRepository.updateUser(user, id);
         if (result == 0) {
-            customLogging.error(CLASS_NAME, "updateAllUser", "L'user amb id: " + user.getId() + " no existeix.");
+            customLogging.error(CLASS_NAME, "updateAllUser", "L'user amb id: " + user.getId() + " no existeix.", null);
         } else {
             customLogging.info(CLASS_NAME, "updateAllUser", "User modificat correctament.");
         }
@@ -77,10 +77,10 @@ public class UserService {
 
     //Modifca només nom
     public int updateUser(long id, String name){
-        customLogging.info(className, "updateUser", "Modificant l'user amb id: " + id);
+        customLogging.info(CLASS_NAME, "updateUser", "Modificant l'user amb id: " + id);
         int result = userRepository.updateUser(id, name);
         if (result == 0) {
-            customLogging.error(CLASS_NAME, "updateAllUser", "L'user amb id: " + user.getId() + " no existeix.");
+            customLogging.error(CLASS_NAME, "updateAllUser", "L'user amb id: " + id + " no existeix.", null);
         } else {
             customLogging.info(CLASS_NAME, "updateAllUser", "User modificat correctament.");
         }
@@ -92,7 +92,7 @@ public class UserService {
         customLogging.info(CLASS_NAME, "deleteUser", "Borrant l'user amb id: " + id);
         int resultat = userRepository.deleteById(id);
         if (resultat == 0) {
-            customLogging.error(CLASS_NAME, "deleteUser", "L'user amb id: " + id + " no existeix.");
+            customLogging.error(CLASS_NAME, "deleteUser", "L'user amb id: " + id + " no existeix.", null);
         } else {
             customLogging.info(CLASS_NAME, "deleteUser", "L'user amb id: " + id + " s'ha borrat correctament.");
         }
@@ -100,7 +100,7 @@ public class UserService {
     }
 
     public String saveUserImage(Long id, MultipartFile imageFile) throws IOException{
-        customLogging.info(CLASS_NAME, "uploadImage", "Afegint la imatge" + imageFile + "de l'user amb id: " + id);
+        customLogging.info(CLASS_NAME, "uploadImage", "Afegint la imatge" + imageFile.getOriginalFilename() + "de l'user amb id: " + id);
         User user = userRepository.findOne(id);
         
         if(user != null){
@@ -122,7 +122,7 @@ public class UserService {
             customLogging.info(CLASS_NAME, "uploadImage", "La imatge s'ha guardat correctament. El path és : " + relativePath);    
             return "Imatge pujada correctament. Ruta: " + relativePath;
         } else {
-            customLogging.error(CLASS_NAME, "uploadImage", "l'User amd id " + id +"no existeix");
+            customLogging.error(CLASS_NAME, "uploadImage", "l'User amb id " + id +" no existeix", null);
             return "Error al guardar la imatge:";
         }
     }
@@ -150,7 +150,7 @@ public class UserService {
                 }         
             }
         } catch (IOException e){
-            customLogging.error(CLASS_NAME, "insertAllByCsv", "Error en la línia " + nLinia + " del fitxer. Missatge d'error: " + e.getMessage());
+            customLogging.error(CLASS_NAME, "insertAllByCsv", "Error en la línia " + nLinia + " del fitxer.", e);
             return -1;
         }
         //creem carpeta si no existeix i guardem el csv i controlem internamente rror per guardar csv a resources  
@@ -172,7 +172,7 @@ public class UserService {
         int conta = 0;
         customLogging.info(CLASS_NAME, "insertAllByJson", "Carregant la informació del fitxer " + jsonFile.getOriginalFilename());
         Timestamp now = new Timestamp(System.currentTimeMillis());
-        int count;
+        int count = 0;
 
         try{
             JsonNode arrel = mapper.readTree(jsonFile.getInputStream()); //llegim fitxerJson
@@ -199,7 +199,7 @@ public class UserService {
                     userRepository.save(usuari);
                     conta++;
                 } catch (Exception e){
-                    customLogging.error(CLASS_NAME, "insertAllByJson", "Error en la línia " + conta + " del fitxer. Missatge d'error: " + e.getMessage());
+                    customLogging.error(CLASS_NAME, "insertAllByJson", "Error en la línia " + conta + " del fitxer.", e);  
                     return -2;
                 }
             }
@@ -216,7 +216,7 @@ public class UserService {
         }catch (IOException e){
             return -5;
         }
-        customLogging.info(CLASS_NAME, "insertAllByCsv", "S'han guardat correctament " + conta + " registres i han donat error " + (count-conta) + " registres");
+        customLogging.info(CLASS_NAME, "insertAllByJson", "S'han guardat correctament " + conta + " registres i han donat error " + (count-conta) + " registres");
         return conta;
     }    
 }
